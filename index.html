@@ -1,0 +1,1127 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Blueprint</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap">
+<style>
+/* Layout: coluna de celular centralizada; abas fixas no rodapé; fluxos do plano abrem como camadas por cima.
+   Tokens copiados de src/styles/theme.ts (v2). */
+:root {
+  --bg: #DDDDDD;
+  --card: #F2F2F2;
+  --sunk: #D0D0D0;
+  --ink: #000000;
+  --on-ink: #DDDDDD;
+  --mute: #474747;
+  --hair: rgba(0,0,0,0.16);
+  --accent: #FF4B00;
+  --accent-text: #4607CD;
+  --placeholder: #5E5E5E;
+  --overlay: rgba(0,0,0,0.50);
+  --grid: rgba(0,0,0,0.06);
+  --ga: #4607CD;
+  --gb: #FF4B00;
+  --r1: #4607CD; --r2: #841E89; --r3: #C13444; --r4: #FF4B00;
+  --sh-card: 0 8px 24px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
+  --sh-glow: 0 10px 26px rgba(255,75,0,0.30);
+  --sh-tab: 0 -10px 28px rgba(0,0,0,0.07);
+  --sh-sheet: 0 -16px 40px rgba(0,0,0,0.22);
+  --ok: #1F7A3A;
+  --erro: #B3261E;
+
+  --f-sans: "Sora", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --r-progress: 28px; --r-card: 24px; --r-cat: 22px; --r-btn: 18px; --r-field: 16px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --col: 460px;
+}
+:root[data-esquema="dark"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --card: #141414;
+  --sunk: #222222;
+  --ink: #DDDDDD;
+  --on-ink: #000000;
+  --mute: #9C9C9C;
+  --hair: rgba(221,221,221,0.20);
+  --accent-text: #FF4B00;
+  --placeholder: #8F8F8F;
+  --overlay: rgba(0,0,0,0.62);
+  --grid: rgba(221,221,221,0.06);
+  --ga: #7A4DFF;
+  --r1: #7A4DFF; --r2: #A64CAA; --r3: #D34C55; --r4: #FF4B00;
+  --sh-card: none;
+  --sh-glow: 0 10px 26px rgba(255,75,0,0.32);
+  --sh-tab: none;
+  --ok: #5CC97B;
+  --erro: #FF8A80;
+}
+:root[data-destaque="laranja"] { --ga: #FF4B00; --gb: #FF4B00; --accent-text: #C13400; }
+:root[data-esquema="dark"][data-destaque="laranja"] { --accent-text: #FF4B00; }
+:root[data-destaque="indigo"] { --ga: #4607CD; --gb: #4607CD; --accent: #4607CD; --sh-glow: 0 10px 26px rgba(70,7,205,0.30); }
+:root[data-esquema="dark"][data-destaque="indigo"] { --ga: #7A4DFF; --gb: #7A4DFF; --accent: #7A4DFF; --accent-text: #9C7BFF; --sh-glow: 0 10px 26px rgba(122,77,255,0.34); }
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body {
+  font-family: var(--f-sans); font-size: 16px; line-height: 22px;
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; padding: 0; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* tipografia (TYPOGRAPHY de theme.ts) */
+.t-ring { font-size: 48px; line-height: 48px; font-weight: 300; letter-spacing: -0.03em; }
+.t-h1 { font-size: 30px; line-height: 36px; font-weight: 400; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.t-sheet { font-size: 26px; line-height: 32px; font-weight: 400; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.t-card { font-size: 19px; line-height: 24px; font-weight: 400; letter-spacing: -0.02em; margin: 0; }
+.t-sec { font-size: 17px; line-height: 24px; font-weight: 600; margin: 0; }
+.t-body { font-size: 16px; line-height: 22px; font-weight: 500; }
+.t-sup { font-size: 14px; line-height: 20px; font-weight: 400; }
+.t-cap { font-size: 13px; line-height: 18px; font-weight: 400; }
+.mute { color: var(--mute); }
+.acc { color: var(--accent-text); }
+
+#app { max-width: var(--col); margin: 0 auto; padding-block: 28px 120px; }
+#app.com-rodape { padding-bottom: 196px; }
+.tela { display: flex; flex-direction: column; gap: 18px; }
+.entra > * { animation: sobe .6s var(--ease) both; }
+.entra > *:nth-child(2) { animation-delay: 60ms; } .entra > *:nth-child(3) { animation-delay: 120ms; }
+.entra > *:nth-child(4) { animation-delay: 180ms; } .entra > *:nth-child(5) { animation-delay: 240ms; }
+.entra > *:nth-child(n+6) { animation-delay: 300ms; }
+@keyframes sobe { from { opacity: .001; transform: translateY(10px); } }
+
+.linha { display: flex; align-items: center; gap: 12px; }
+.entre { justify-content: space-between; }
+.coluna { display: flex; flex-direction: column; gap: 12px; }
+.card { background: var(--card); border-radius: var(--r-card); box-shadow: var(--sh-card); padding: 20px; }
+
+/* cabeçalho */
+.cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cab > div:first-child { min-width: 0; }
+.chave { display: flex; background: var(--sunk); border-radius: 999px; padding: 4px; gap: 2px; }
+.chave button { width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: var(--mute); transition: background .22s, color .22s; }
+.chave button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+
+.aviso-exemplo { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-radius: var(--r-field); border: 1px dashed var(--hair); }
+.link { color: var(--accent-text); font-weight: 600; font-size: 14px; min-height: 44px; padding: 0 4px; }
+
+/* cartão de progresso */
+.progresso {
+  border-radius: var(--r-progress); padding: 20px; display: flex; align-items: center; gap: 18px;
+  background-color: var(--card); box-shadow: var(--sh-card);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.anel { position: relative; width: 128px; height: 128px; flex: none; }
+.anel svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.anel .centro { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.anel circle { fill: none; }
+.seg-novo { animation: desenha .8s var(--ease) both; }
+@keyframes desenha { from { stroke-dasharray: 0 400; } }
+.progresso .texto { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+/* plano de hoje */
+.cab-sec { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
+.lista-plano { display: flex; flex-direction: column; gap: 10px; }
+.linha-plano {
+  display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 14px;
+  width: 100%; text-align: left; background: var(--card); border-radius: var(--r-cat); padding: 14px 16px;
+  box-shadow: var(--sh-card); transition: transform .22s var(--ease);
+}
+.linha-plano:active, .cat:active, .btn-acao:active:not(:disabled) { transform: translateY(2px) scale(.99); }
+.ic-circ { width: 42px; height: 42px; border-radius: 999px; background: var(--sunk); display: grid; place-items: center; flex: none; }
+.barra-mini { height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; margin-top: 8px; position: relative; }
+.barra-mini i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--ga), var(--gb)); border-radius: 3px; transition: width .6s var(--ease); }
+.barra-mini b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .45; }
+.selo { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.selo.pendente { background: var(--sunk); color: var(--mute); }
+.selo.minimo { background: transparent; color: var(--ink); border: 1px solid var(--hair); }
+.selo.completa { background: var(--accent); color: #fff; }
+.direita { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.convite { display: flex; flex-direction: column; gap: 12px; }
+
+/* grade de categorias */
+.grade { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cat {
+  position: relative; min-height: 108px; text-align: left; background: var(--card); border-radius: var(--r-cat);
+  padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+  box-shadow: var(--sh-card); transition: background .22s, color .22s, transform .22s var(--ease);
+}
+.cat .t-sup { color: var(--mute); }
+.cat[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); box-shadow: var(--sh-glow); }
+.cat[aria-pressed="true"] .t-sup { color: var(--on-ink); opacity: .75; }
+.cat[aria-pressed="true"] .ic-circ { background: var(--on-ink); color: var(--ink); }
+.cat .marca { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 999px; background: var(--accent); color: #fff; display: grid; place-items: center; }
+.cat.larga { grid-column: 1 / -1; min-height: 76px; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; }
+
+/* botão principal + toast */
+.rodape {
+  position: fixed; left: 50%; transform: translateX(-50%); width: min(100%, var(--col));
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px)); padding: 0 max(16px, env(safe-area-inset-left, 0px)) 12px;
+  display: flex; flex-direction: column; gap: 12px; z-index: 5; pointer-events: none;
+}
+.rodape > * { pointer-events: auto; }
+.btn-acao {
+  height: 56px; width: 100%; border-radius: var(--r-btn); background: var(--ink); color: var(--on-ink);
+  font-weight: 600; font-size: 17px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: var(--sh-glow); transition: background .22s, transform .22s var(--ease);
+}
+.btn-acao:disabled { background: var(--sunk); color: var(--mute); box-shadow: none; }
+.btn-sec { height: 48px; padding: 0 18px; border-radius: var(--r-btn); border: 1.5px solid var(--hair); font-weight: 600; }
+.btn-perigo { color: var(--erro); border-color: currentColor; }
+.toast {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 6px 6px 16px;
+  border-radius: var(--r-field); background: var(--ink); color: var(--on-ink); animation: toast .55s var(--ease) both;
+}
+.toast button { min-height: 44px; padding: 0 14px; border-radius: 12px; color: var(--accent); font-weight: 700; }
+:root[data-destaque="indigo"]:not([data-esquema="dark"]) .toast button { color: #B9A0FF; }
+@keyframes toast { from { opacity: 0; transform: translateY(14px); } }
+
+/* abas */
+.abas {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: min(100%, var(--col)); z-index: 6;
+  background: var(--card); box-shadow: var(--sh-tab); display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  padding: 8px max(10px, env(safe-area-inset-left, 0px)) calc(8px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+}
+.abas button { height: 64px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 500; color: var(--mute); transition: background .22s, color .22s; }
+.abas button[aria-current="page"] { background: var(--ink); color: var(--on-ink); }
+
+/* segmented */
+.seg { display: flex; background: var(--sunk); border-radius: 999px; padding: 4px; gap: 2px; }
+.seg button { flex: 1; min-height: 44px; border-radius: 999px; font-weight: 500; font-size: 15px; color: var(--ink); padding: 0 8px; transition: background .22s, color .22s; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+
+/* calendário */
+.nav-mes { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; text-align: center; }
+.nav-mes button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; }
+.nav-mes button:disabled { opacity: .3; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px 2px; text-align: center; }
+.cal .dsem { font-size: 13px; color: var(--mute); padding-bottom: 6px; }
+.cal .dia { height: 52px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 16px; font-weight: 500; }
+.cal .dia.fora { color: var(--mute); opacity: .55; }
+.cal .dia.futuro { color: var(--mute); }
+.cal .dia.hoje { background: var(--card); box-shadow: var(--sh-glow); }
+.cal .dia.sel { outline: 1.5px solid var(--ink); outline-offset: -1.5px; }
+.cal .dia i { width: 24px; height: 4px; border-radius: 2px; background: transparent; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--sunk); font-weight: 500; font-size: 15px; }
+button.chip { min-height: 44px; }
+button.chip[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+button.chip:disabled { opacity: .45; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grande { font-size: 40px; line-height: 44px; font-weight: 300; letter-spacing: -0.03em; }
+
+/* histórico */
+.barras { display: grid; gap: 10px; align-items: end; }
+.barras .b { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 14px; }
+.barras .trilho { width: 100%; height: 150px; border-radius: 14px; background: var(--sunk); position: relative; overflow: hidden; }
+.barras .trilho i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); border-radius: 14px; transition: height .85s var(--ease); }
+.barras .hoje .trilho i { background: linear-gradient(180deg, var(--ga), var(--gb)); }
+.barras .hoje span:last-child { font-weight: 700; }
+.barras.mes { gap: 3px; }
+.barras.mes .trilho { height: 110px; border-radius: 4px; }
+.barras.mes .trilho i { border-radius: 4px; }
+.barras.mes .b { font-size: 10px; gap: 6px; }
+.grupo { display: flex; flex-direction: column; gap: 4px; }
+.item-hist { display: grid; grid-template-columns: 52px 42px 1fr auto; align-items: center; gap: 14px; min-height: 60px; }
+
+/* perfil */
+.avatar { width: 64px; height: 64px; border-radius: 999px; background: linear-gradient(180deg, var(--ga), var(--gb)); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 22px; flex: none; }
+.mapa { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; }
+.mapa .col { display: grid; grid-template-rows: repeat(7, 1fr); gap: 5px; }
+.mapa i { aspect-ratio: 1; border-radius: 5px; background: var(--sunk); display: block; }
+.mapa i.futuro { background: transparent; box-shadow: inset 0 0 0 1px var(--hair); }
+.n1 { background: var(--r1) !important; } .n2 { background: var(--r2) !important; } .n3 { background: var(--r3) !important; } .n4 { background: var(--r4) !important; }
+.legenda { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+.legenda i { width: 14px; height: 14px; border-radius: 4px; background: var(--sunk); display: inline-block; }
+.amostras { display: flex; gap: 12px; }
+.amostras button { width: 48px; height: 48px; border-radius: 999px; display: grid; place-items: center; color: #fff; }
+.amostras button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--ink); }
+.linha-config { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; }
+.linha-config + .linha-config { border-top: 1px solid var(--hair); }
+.linha-toque { width: 100%; text-align: left; }
+
+/* camadas */
+.veu { position: fixed; inset: 0; background: var(--overlay); z-index: 20; animation: fade .4s both; }
+@keyframes fade { from { opacity: 0; } }
+.sheet {
+  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, var(--col)); z-index: 21;
+  background: var(--card); box-shadow: var(--sh-sheet); border-radius: var(--r-progress) var(--r-progress) 0 0;
+  padding: 12px max(20px, env(safe-area-inset-left, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: 16px; animation: sheet .6s var(--ease) both; max-height: 92vh; overflow: auto;
+}
+@keyframes sheet { from { transform: translate(-50%, 100%); } }
+.alca { align-self: center; width: 44px; height: 5px; border-radius: 3px; background: var(--hair); }
+.pagina {
+  position: fixed; inset: 0; z-index: 15; background: var(--bg); overflow-y: auto; animation: fade .3s both;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.pagina > .miolo { max-width: var(--col); margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-bottom: 96px; }
+.pagina .acoes-fixas {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: min(100%, var(--col));
+  padding: 12px max(16px, env(safe-area-inset-left, 0px)) calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(transparent, var(--bg) 30%); display: flex; gap: 10px;
+}
+.voltar { width: 44px; height: 44px; border-radius: 999px; background: var(--card); display: grid; place-items: center; flex: none; }
+.passos { display: flex; gap: 6px; flex: 1; }
+.passos i { flex: 1; height: 4px; border-radius: 2px; background: var(--sunk); }
+.passos i.on { background: linear-gradient(90deg, var(--ga), var(--gb)); }
+
+/* formulários */
+.campo { display: flex; flex-direction: column; gap: 8px; }
+.campo label, .rot { font-size: 14px; font-weight: 600; }
+.input { height: 52px; padding: 0 16px; border: 1px solid var(--hair); border-radius: var(--r-field); background: var(--card); width: 100%; font-size: 16px; }
+.input::placeholder { color: var(--placeholder); }
+.input.pequeno { height: 44px; width: auto; min-width: 0; padding: 0 10px; }
+.erro { color: var(--erro); font-size: 14px; font-weight: 500; }
+.stepper { display: flex; align-items: center; gap: 4px; background: var(--sunk); border-radius: 999px; padding: 4px; }
+.stepper button { width: 40px; height: 40px; border-radius: 999px; background: var(--card); display: grid; place-items: center; font-size: 20px; }
+.stepper button:disabled { opacity: .35; }
+.stepper span { min-width: 34px; text-align: center; font-weight: 600; }
+.dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.dias button { height: 44px; border-radius: 12px; background: var(--sunk); font-weight: 600; font-size: 14px; }
+.dias button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.horas { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hora { display: inline-flex; align-items: center; gap: 2px; background: var(--sunk); border-radius: 14px; padding: 2px 2px 2px 4px; }
+.hora input { border: 0; background: transparent; height: 40px; padding: 0 4px; }
+.hora button { width: 32px; height: 40px; display: grid; place-items: center; color: var(--mute); }
+.nota { font-size: 13px; line-height: 18px; color: var(--mute); }
+.interruptor { width: 52px; height: 32px; border-radius: 999px; background: var(--sunk); position: relative; flex: none; transition: background .22s; }
+.interruptor::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 999px; background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .22s var(--ease); }
+.interruptor[aria-checked="true"] { background: var(--accent); }
+.interruptor[aria-checked="true"]::after { transform: translateX(20px); }
+.escolha { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.escolha .cat { min-height: 92px; }
+
+@media (max-width: 380px) {
+  .progresso { flex-direction: column; align-items: flex-start; }
+  .tres { grid-template-columns: 1fr 1fr; }
+  .item-hist { grid-template-columns: 46px 42px 1fr auto; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div id="app"></div>
+<div id="fixos"></div>
+<div id="camada"></div>
+
+<script>
+"use strict";
+/* ================= Domínio (espelha src/domain) ================= */
+const CATS = { hidratacao: "Hidratação", exercicio: "Exercício", descanso: "Descanso", estudo: "Estudo", outro: "Outro" };
+const FIXAS = ["hidratacao", "exercicio", "descanso", "estudo"];
+const SUGESTOES_OUTRO = ["Meditação", "Alongamento", "Organização"];
+const ROTULO_MAX = 40;
+const DIAS_SEMANA = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+const DIAS_ABREV = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const DIAS_LETRA = ["D", "S", "T", "Q", "Q", "S", "S"];
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const SUGESTAO_PLANO = {
+  hidratacao: { meta: 8, minimo: 2, quando: { tipo: "intervalo", inicio: "09:00", fim: "21:00", cadaMinutos: 120 } },
+  exercicio: { meta: 1, minimo: 1, quando: { tipo: "horarios", horas: ["18:00"] } },
+  descanso: { meta: 1, minimo: 1, quando: { tipo: "horarios", horas: ["22:00"] } },
+  estudo: { meta: 1, minimo: 1, quando: { tipo: "horarios", horas: ["19:00"] } },
+  outro: { meta: 1, minimo: 1, quando: { tipo: "livre" } },
+};
+
+const pad = (n) => String(n).padStart(2, "0");
+const chaveDoDia = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const inicioDoDia = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const somarDias = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const inicioDaSemana = (d) => somarDias(inicioDoDia(d), -d.getDay());
+const diasDaSemana = (dom) => Array.from({ length: 7 }, (_, i) => somarDias(dom, i));
+const formatarHora = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const formatarCabecalho = (d) => `${DIAS_SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`;
+const formatarDiaMes = (d) => `${d.getDate()} de ${MESES[d.getMonth()]}`;
+const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+function formatarIntervalo(a, b) {
+  if (a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()) return `${a.getDate()} a ${b.getDate()} de ${MESES[b.getMonth()]}`;
+  const ano = a.getFullYear() !== b.getFullYear();
+  return `${formatarDiaMes(a)}${ano ? " de " + a.getFullYear() : ""} a ${formatarDiaMes(b)}${ano ? " de " + b.getFullYear() : ""}`;
+}
+function rotuloDoDia(d, hoje) {
+  const k = chaveDoDia(d);
+  if (k === chaveDoDia(hoje)) return "Hoje";
+  if (k === chaveDoDia(somarDias(hoje, -1))) return "Ontem";
+  return formatarCabecalho(d);
+}
+function gradeDoMes(ano, mes) {
+  const ultimo = new Date(ano, mes + 1, 0);
+  const semanas = [];
+  let dia = inicioDaSemana(new Date(ano, mes, 1));
+  while (dia <= ultimo || semanas.length < 5) {
+    semanas.push(diasDaSemana(dia).map((data) => ({ data, doMes: data.getMonth() === mes })));
+    dia = somarDias(dia, 7);
+  }
+  return semanas;
+}
+const normalizarRotulo = (t) => { const l = String(t || "").trim(); return l.length >= 1 && l.length <= ROTULO_MAX ? l : null; };
+const nomeAcao = (a) => a.rotulo || CATS[a.categoria];
+const nomeAtividade = (a) => (a.categoria === "outro" ? a.rotulo : CATS[a.categoria]);
+let seq = 0;
+const novoId = () => `local-${Date.now().toString(36)}-${(++seq).toString(36)}`;
+
+function contarPorDia(acoes) {
+  const m = new Map();
+  for (const a of acoes) { const k = chaveDoDia(new Date(a.criadoEm)); m.set(k, (m.get(k) || 0) + 1); }
+  return m;
+}
+function sequenciaAtual(porDia, hoje) {
+  let d = inicioDoDia(hoje);
+  if (!porDia.get(chaveDoDia(d))) d = somarDias(d, -1);
+  let n = 0;
+  while ((porDia.get(chaveDoDia(d)) || 0) > 0) { n++; d = somarDias(d, -1); }
+  return n;
+}
+function nivel(t) { if (t <= 0) return 0; if (t <= 2) return 1; if (t <= 4) return 2; if (t === 5) return 3; return 4; }
+function indiceMelhor(totais) { let m = null; totais.forEach((t, i) => { if (t > 0 && (m === null || t >= totais[m])) m = i; }); return m; }
+function acoesDoDia(chave) { return S.acoes.filter((a) => chaveDoDia(new Date(a.criadoEm)) === chave); }
+
+/* --- Plano (docs/superpowers/specs, Parte 1) --- */
+const HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+function validarAtividade(a, lista, ignorarId) {
+  if (!a.categoria) return "Escolha uma categoria.";
+  if (!Number.isInteger(a.meta) || a.meta < 1 || a.meta > 20) return "A quantidade por dia vai de 1 a 20.";
+  if (!Number.isInteger(a.minimo) || a.minimo < 1 || a.minimo > a.meta) return "O mínimo vai de 1 até a quantidade por dia.";
+  if (!a.dias.length) return "Escolha pelo menos 1 dia da semana.";
+  if (a.categoria === "outro" && !normalizarRotulo(a.rotulo)) return `Dê um nome de 1 a ${ROTULO_MAX} caracteres.`;
+  const q = a.quando;
+  if (q.tipo === "horarios") {
+    if (q.horas.length < 1 || q.horas.length > 8) return "Use de 1 a 8 horários.";
+    if (q.horas.some((h) => !HORA_RE.test(h))) return "Preencha os horários no formato HH:MM.";
+    if (new Set(q.horas).size !== q.horas.length) return "Há horários repetidos.";
+  }
+  if (q.tipo === "intervalo") {
+    if (!HORA_RE.test(q.inicio) || !HORA_RE.test(q.fim)) return "Preencha o início e o fim do intervalo.";
+    if (q.inicio >= q.fim) return "O início do intervalo precisa vir antes do fim.";
+    if (q.cadaMinutos < 30 || q.cadaMinutos > 240) return "O intervalo vai de 30 a 240 minutos.";
+  }
+  const outros = lista.filter((x) => x.id !== ignorarId);
+  if (a.categoria !== "outro" && outros.some((x) => x.categoria === a.categoria)) return `${CATS[a.categoria]} já está no seu plano.`;
+  if (a.categoria === "outro") {
+    const r = a.rotulo.trim().toLowerCase();
+    if (outros.some((x) => x.categoria === "outro" && x.rotulo.trim().toLowerCase() === r)) return `Já existe "${a.rotulo.trim()}" no seu plano.`;
+  }
+  return null;
+}
+function limparAtividade(d) {
+  const q = d.quando.tipo === "horarios" ? { tipo: "horarios", horas: [...d.quando.horas].sort() }
+    : d.quando.tipo === "intervalo" ? { tipo: "intervalo", inicio: d.quando.inicio, fim: d.quando.fim, cadaMinutos: Number(d.quando.cadaMinutos) }
+    : { tipo: "livre" };
+  return {
+    id: d.id || novoId(), categoria: d.categoria, rotulo: d.categoria === "outro" ? normalizarRotulo(d.rotulo) : undefined,
+    meta: d.meta, minimo: d.minimo, dias: [...d.dias].sort(), quando: q, criadaEm: d.criadaEm || new Date().toISOString(),
+  };
+}
+function ajusteDe(chave) { return S.plano.ajustes[chave] || { puladas: [], extras: [] }; }
+function planoDoDia(data) {
+  const aj = ajusteDe(chaveDoDia(data));
+  return S.plano.atividades.filter((a) => a.dias.includes(data.getDay()) && !aj.puladas.includes(a.id)).concat(aj.extras);
+}
+function corresponde(acao, at) {
+  if (acao.categoria !== at.categoria) return false;
+  if (at.categoria !== "outro") return true;
+  return (acao.rotulo || "").trim().toLowerCase() === (at.rotulo || "").trim().toLowerCase();
+}
+function situacao(feitas, at) { return feitas >= at.meta ? "completa" : feitas >= at.minimo ? "minimo" : "pendente"; }
+function progressoDoPlano(hoje) {
+  const doDia = acoesDoDia(chaveDoDia(hoje));
+  const itens = planoDoDia(hoje).map((at) => {
+    const feitas = doDia.filter((a) => corresponde(a, at)).length;
+    return { at, feitas, situacao: situacao(feitas, at) };
+  });
+  return { itens, concluidas: itens.filter((i) => i.situacao === "completa").length, total: itens.length };
+}
+function juntar(nomes) { return nomes.length <= 1 ? nomes.join("") : nomes.slice(0, -1).join(", ") + " e " + nomes[nomes.length - 1]; }
+function descreverQuando(q) {
+  if (q.tipo === "horarios") return q.horas.join(", ");
+  if (q.tipo === "intervalo") { const h = q.cadaMinutos % 60 === 0 ? `${q.cadaMinutos / 60} h` : `${q.cadaMinutos} min`; return `a cada ${h}, ${q.inicio} às ${q.fim}`; }
+  return "sem horário";
+}
+function descreverDias(dias) {
+  if (dias.length === 7) return "todos os dias";
+  if (dias.join() === "1,2,3,4,5") return "dias úteis";
+  if (dias.join() === "0,6") return "fins de semana";
+  return dias.map((d) => DIAS_ABREV[d]).join(", ");
+}
+
+/* ================= Persistência (formato versionado) ================= */
+const CHAVE = "blueprint:web:v1";
+function estadoVazio() {
+  return { versao: 1, acoes: [], plano: { atividades: [], ajustes: {}, apresentado: false }, prefs: { tema: "auto", destaque: "gradiente", nome: "", email: "", metaSemPlano: 5 } };
+}
+function carregar() {
+  let s = null;
+  try { const t = localStorage.getItem(CHAVE); if (t) s = JSON.parse(t); } catch (e) { s = null; }
+  if (!s || s.versao !== 1 || !Array.isArray(s.acoes)) {
+    s = estadoVazio();
+    s.acoes = exemplos();
+  }
+  const base = estadoVazio();
+  s.prefs = Object.assign(base.prefs, s.prefs || {});
+  s.plano = Object.assign(base.plano, s.plano || {});
+  s.acoes = s.acoes.filter((a) => a && CATS[a.categoria] && !isNaN(new Date(a.criadoEm)));
+  const limite = chaveDoDia(somarDias(new Date(), -14));
+  for (const k of Object.keys(s.plano.ajustes)) if (k < limite) delete s.plano.ajustes[k];
+  return s;
+}
+function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(S)); } catch (e) { /* armazenamento indisponível: segue em memória */ } }
+
+/* Dados de exemplo: 6 semanas anteriores a hoje, ids com prefixo "ex-" para limpar depois. */
+function exemplos() {
+  let x = 20261017;
+  const rnd = () => ((x = (x * 1103515245 + 12345) % 2147483648) / 2147483648);
+  const lista = [];
+  const hoje = inicioDoDia(new Date());
+  for (let d = 42; d >= 1; d--) {
+    if (rnd() < 0.15) continue;
+    const dia = somarDias(hoje, -d);
+    const n = 1 + Math.floor(rnd() * 7);
+    for (let i = 0; i < n; i++) {
+      const r = rnd();
+      const cat = r < 0.45 ? "hidratacao" : r < 0.62 ? "exercicio" : r < 0.75 ? "descanso" : r < 0.92 ? "estudo" : "outro";
+      const quando = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate(), 7 + Math.floor(rnd() * 15), Math.floor(rnd() * 60));
+      lista.push({ id: `ex-${d}-${i}`, categoria: cat, rotulo: cat === "outro" ? SUGESTOES_OUTRO[Math.floor(rnd() * 3)] : undefined, criadoEm: quando.toISOString() });
+    }
+  }
+  return lista;
+}
+
+/* ================= Estado de tela ================= */
+let S = carregar();
+const UI = {
+  aba: "hoje", animar: true, selecionada: null, toast: null, toastTimer: null, anelAnterior: [],
+  hist: { modo: "semana", deslocamento: 0, limite: 30 },
+  cal: null, camada: null, drafts: {}, monte: null, extra: null, confirmar: null, erro: "",
+};
+const hojeAgora = () => new Date();
+(function iniciarCal() { const h = hojeAgora(); UI.cal = { ano: h.getFullYear(), mes: h.getMonth(), sel: chaveDoDia(h) }; })();
+
+/* ================= Tema ================= */
+const mqEscuro = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+function esquemaDoSistema() {
+  const host = document.documentElement.getAttribute("data-theme");
+  if (host === "dark" || host === "light") return host;
+  return mqEscuro && mqEscuro.matches ? "dark" : "light";
+}
+function esquemaAtual() { return S.prefs.tema === "auto" ? esquemaDoSistema() : S.prefs.tema === "escuro" ? "dark" : "light"; }
+function aplicarTema() {
+  document.documentElement.setAttribute("data-esquema", esquemaAtual());
+  document.documentElement.setAttribute("data-destaque", S.prefs.destaque);
+}
+if (mqEscuro && mqEscuro.addEventListener) mqEscuro.addEventListener("change", () => { aplicarTema(); render(); });
+new MutationObserver(() => { if (S.prefs.tema === "auto") { aplicarTema(); render(); } }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+function gradiente() {
+  const cs = getComputedStyle(document.documentElement);
+  return [cs.getPropertyValue("--ga").trim(), cs.getPropertyValue("--gb").trim()];
+}
+function interpolar(a, b, t) {
+  const ca = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  const cb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
+  return "#" + ca.map((c, i) => Math.round(c + (cb[i] - c) * t).toString(16).padStart(2, "0")).join("");
+}
+
+/* ================= Ícones (src/ui/Icon.tsx) ================= */
+const PATHS = {
+  hidratacao: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  exercicio: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>',
+  descanso: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  estudo: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  outro: '<circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/>',
+  sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  mais: '<path d="M5 12h14M12 5v14"/>', menos: '<path d="M5 12h14"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  hoje: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  calendario: '<rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  historico: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  perfil: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  anterior: '<path d="m15 18-6-6 6-6"/>', proximo: '<path d="m9 18 6-6-6-6"/>',
+};
+PATHS.lua = PATHS.descanso;
+const ic = (n, s = 22, w = 1.9) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[n]}</svg>`;
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ================= Ações ================= */
+function registrar(categoria, rotulo) {
+  const acao = { id: novoId(), categoria, rotulo: rotulo ? normalizarRotulo(rotulo) : undefined, criadoEm: new Date().toISOString() };
+  S.acoes.push(acao);
+  salvar();
+  mostrarToast(acao.id, `${nomeAcao(acao)} registrado às ${formatarHora(new Date(acao.criadoEm))}`);
+}
+function remover(id) { S.acoes = S.acoes.filter((a) => a.id !== id); salvar(); }
+function mostrarToast(id, msg) {
+  clearTimeout(UI.toastTimer);
+  UI.toast = { id, msg };
+  UI.toastTimer = setTimeout(() => { UI.toast = null; render(); }, 5000);
+}
+
+/* ================= Anel de progresso ================= */
+function anel(fracoes, centro, sub) {
+  const R = 48, C = 2 * Math.PI * R, N = fracoes.length;
+  const passo = C / N, gap = N > 1 ? Math.min(6, passo * 0.3) : 0, L = passo - gap;
+  const [a, b] = gradiente();
+  const anterior = UI.anelAnterior;
+  let segs = "";
+  fracoes.forEach((f, i) => {
+    const off = -(i * passo);
+    segs += `<circle cx="60" cy="60" r="${R}" stroke="var(--sunk)" stroke-width="12" stroke-dasharray="${L} ${C}" stroke-dashoffset="${off}"/>`;
+    if (f > 0) {
+      const novo = UI.animar || f > (anterior[i] || 0);
+      segs += `<circle class="${novo ? "seg-novo" : ""}" style="animation-delay:${UI.animar ? 200 + i * 100 : 0}ms" cx="60" cy="60" r="${R}" stroke="${interpolar(a, b, N > 1 ? i / (N - 1) : 0)}" stroke-width="12" stroke-dasharray="${L * f} ${C}" stroke-dashoffset="${off}"/>`;
+    }
+  });
+  UI.anelAnterior = fracoes;
+  return `<div class="anel" role="img" aria-label="${centro} ${sub}"><svg viewBox="0 0 120 120">${segs}</svg>
+    <div class="centro"><span class="t-ring num">${centro}</span><span class="t-sup mute">${sub}</span></div></div>`;
+}
+
+/* ================= Telas ================= */
+function telaHome() {
+  const hoje = hojeAgora();
+  const doDia = acoesDoDia(chaveDoDia(hoje));
+  const porCat = {}; for (const c in CATS) porCat[c] = 0; doDia.forEach((a) => porCat[a.categoria]++);
+  const prog = progressoDoPlano(hoje);
+  const temPlano = S.plano.atividades.length > 0 || ajusteDe(chaveDoDia(hoje)).extras.length > 0;
+  const nome = S.prefs.nome.trim().split(/\s+/)[0];
+  const esq = esquemaAtual();
+  const temExemplo = S.acoes.some((a) => a.id.startsWith("ex-"));
+
+  let cartao;
+  if (prog.total > 0) {
+    const fr = prog.itens.map((i) => (i.situacao === "completa" ? 1 : i.situacao === "minimo" ? 0.5 : 0));
+    const faltam = prog.itens.filter((i) => i.situacao !== "completa").map((i) => nomeAtividade(i.at));
+    const msg = faltam.length ? `Falta ${juntar(faltam)}.` : "Plano do dia cumprido.";
+    cartao = `${anel(fr, prog.concluidas, `de ${prog.total}`)}<div class="texto"><p class="t-card">do seu plano concluídas hoje</p><p class="t-sup mute" style="margin:0">${esc(msg)} ${plural(doDia.length, "ação registrada", "ações registradas")} no total.</p></div>`;
+  } else {
+    const meta = S.prefs.metaSemPlano, t = doDia.length;
+    const fr = Array.from({ length: meta }, (_, i) => (i < t ? 1 : 0));
+    const msg = t <= 0 ? "Toque em uma categoria para começar o plano." : meta - t <= 0 ? "Meta do dia concluída." : meta - t === 1 ? "Falta 1 para fechar o dia." : `Faltam ${meta - t} para fechar o dia.`;
+    cartao = `${anel(fr, t, `de ${meta}`)}<div class="texto"><p class="t-card">${t === 1 ? "ação registrada" : "ações registradas"} hoje</p><p class="t-sup mute" style="margin:0">${msg}</p></div>`;
+  }
+
+  let plano;
+  if (!temPlano) {
+    plano = `<section class="card convite"><h2 class="t-sec">Monte seu dia</h2>
+      <p class="t-sup mute" style="margin:0">Escolha o que quer fazer hoje, quantas vezes e qual o mínimo para dias difíceis. Leva um minuto.</p>
+      <button class="btn-acao" data-a="abrir-monte">${ic("mais")} Montar meu plano</button></section>`;
+  } else {
+    const linhas = prog.itens.map(({ at, feitas, situacao: s }) => {
+      const selo = s === "completa" ? `<span class="selo completa">${ic("check", 14, 2.4)} completa</span>` : s === "minimo" ? `<span class="selo minimo">mínimo feito</span>` : `<span class="selo pendente">${ic("mais", 14, 2.4)} 1 toque</span>`;
+      return `<button class="linha-plano" data-a="reg-plano" data-id="${at.id}" aria-label="Registrar ${esc(nomeAtividade(at))}. ${feitas} de ${at.meta}.">
+        <span class="ic-circ">${ic(at.categoria)}</span>
+        <span style="min-width:0"><span class="t-body" style="display:block">${esc(nomeAtividade(at))}</span>
+          <span class="t-cap mute">mínimo ${at.minimo}${at.extra ? " · só hoje" : ""}</span>
+          <span class="barra-mini"><i style="width:${Math.min(100, (feitas / at.meta) * 100)}%"></i>${at.minimo < at.meta ? `<b style="left:${(at.minimo / at.meta) * 100}%"></b>` : ""}</span></span>
+        <span class="direita"><span class="t-body num">${feitas}/${at.meta}</span>${selo}</span></button>`;
+    }).join("");
+    plano = `<section class="coluna"><div class="cab-sec"><h2 class="t-sec">Plano de hoje</h2><button class="link" data-a="abrir-seudia">Ajustar</button></div>
+      ${linhas ? `<div class="lista-plano">${linhas}</div>` : `<div class="card t-sup mute">Nada planejado para ${DIAS_SEMANA[hoje.getDay()].toLowerCase()}. Toque em Ajustar para acrescentar algo só hoje.</div>`}</section>`;
+  }
+
+  const tiles = FIXAS.map((c) => `<button class="cat" data-a="sel-cat" data-c="${c}" aria-pressed="${UI.selecionada === c}">
+      ${UI.selecionada === c ? `<span class="marca">${ic("check", 16, 2.6)}</span>` : ""}
+      <span class="ic-circ">${ic(c)}</span><span><span class="t-card" style="display:block">${CATS[c]}</span><span class="t-sup num">${porCat[c]} hoje</span></span></button>`).join("");
+
+  return `<header class="cab"><div><p class="t-sup mute" style="margin:0">${formatarCabecalho(hoje)}</p><h1 class="t-h1">Olá${nome ? ", " + esc(nome) : ""}!</h1></div>
+      <div class="chave" role="group" aria-label="Tema"><button data-a="tema" data-v="claro" aria-pressed="${esq === "light"}" aria-label="Tema claro">${ic("sol")}</button><button data-a="tema" data-v="escuro" aria-pressed="${esq === "dark"}" aria-label="Tema escuro">${ic("lua")}</button></div></header>
+    ${temExemplo ? `<div class="aviso-exemplo"><span class="t-cap mute">O histórico mostra dados de exemplo das últimas semanas.</span><button class="link" data-a="limpar-exemplos">Limpar</button></div>` : ""}
+    <section class="progresso">${cartao}</section>
+    ${plano}
+    <section class="coluna"><h2 class="t-sec">${temPlano ? "Fora do plano" : "O que você fez agora?"}</h2>
+      <div class="grade">${tiles}
+        <button class="cat larga" data-a="abrir-outro"><span class="ic-circ">${ic("outro")}</span><span><span class="t-card" style="display:block">Outro</span><span class="t-sup">${porCat.outro > 0 ? porCat.outro + " hoje" : "Algo fora da lista"}</span></span></button>
+      </div></section>`;
+}
+
+function rodapeHome() {
+  const t = UI.selecionada ? `Registrar ${CATS[UI.selecionada]}` : "Escolha uma categoria para registrar";
+  return `<div class="rodape">${toastHTML()}<button class="btn-acao" data-a="registrar" ${UI.selecionada ? "" : "disabled"}>${UI.selecionada ? ic("mais") : ""}${t}</button></div>`;
+}
+function toastHTML() {
+  return UI.toast ? `<div class="toast" role="status"><span class="t-sup">${esc(UI.toast.msg)}</span><button data-a="desfazer" data-id="${UI.toast.id}">Desfazer</button></div>` : "";
+}
+
+function telaCalendario() {
+  const hoje = hojeAgora(), kHoje = chaveDoDia(hoje);
+  const { ano, mes, sel } = UI.cal;
+  const porDia = contarPorDia(S.acoes);
+  const cab = DIAS_ABREV.map((d) => `<span class="dsem">${d}</span>`).join("");
+  const dias = gradeDoMes(ano, mes).flat().map(({ data, doMes }) => {
+    const k = chaveDoDia(data), t = porDia.get(k) || 0, futuro = data > hoje && k !== kHoje;
+    const cls = ["dia", doMes ? "" : "fora", futuro ? "futuro" : "", k === kHoje ? "hoje" : "", k === sel && k !== kHoje ? "sel" : ""].join(" ");
+    return `<button class="${cls}" data-a="cal-dia" data-k="${k}" aria-label="${formatarCabecalho(data)}, ${plural(t, "ação", "ações")}" aria-pressed="${k === sel}"><span class="num">${data.getDate()}</span><i class="${!futuro && t ? "n" + nivel(t) : ""}"></i></button>`;
+  }).join("");
+  const [sa, sm, sd] = sel.split("-").map(Number);
+  const dSel = new Date(sa, sm - 1, sd);
+  const doSel = acoesDoDia(sel);
+  const grupos = {};
+  doSel.forEach((a) => { const n = nomeAcao(a); grupos[n] = grupos[n] || { cat: a.categoria, n: 0 }; grupos[n].n++; });
+  const chips = Object.entries(grupos).map(([n, g]) => `<span class="chip">${ic(g.cat, 18)} ${esc(n)} ${g.n}</span>`).join("");
+  const prefixo = `${ano}-${pad(mes + 1)}-`;
+  let totalMes = 0, diasMes = 0;
+  for (const [k, v] of porDia) if (k.startsWith(prefixo) && v > 0) { totalMes += v; diasMes++; }
+  const ehMesAtual = ano === hoje.getFullYear() && mes === hoje.getMonth();
+  return `<h1 class="t-h1">Calendário</h1>
+    <section class="coluna"><div class="nav-mes"><button data-a="cal-mes" data-d="-1" aria-label="Mês anterior">${ic("anterior")}</button>
+      <span class="t-card">${MESES[mes]} de ${ano}</span><button data-a="cal-mes" data-d="1" aria-label="Próximo mês" ${ehMesAtual ? "disabled" : ""}>${ic("proximo")}</button></div>
+      <div class="cal">${cab}${dias}</div></section>
+    <section class="card coluna"><div class="linha entre"><h2 class="t-card">${sel === kHoje ? "Hoje, " + formatarDiaMes(dSel) : formatarCabecalho(dSel)}</h2><span class="t-sup mute num">${plural(doSel.length, "ação", "ações")}</span></div>
+      ${chips ? `<div class="chips">${chips}</div>` : `<p class="t-sup mute" style="margin:0">${dSel > hoje ? "Dia ainda por vir." : "Nenhuma ação registrada neste dia."}</p>`}</section>
+    <section class="card duas"><div><div class="grande num">${totalMes}</div><div class="t-sup mute">ações em ${MESES[mes]}</div></div><div><div class="grande num">${diasMes}</div><div class="t-sup mute">dias com registro</div></div></section>`;
+}
+
+function telaHistorico() {
+  const hoje = hojeAgora(), kHoje = chaveDoDia(hoje);
+  const porDia = contarPorDia(S.acoes);
+  const { modo, deslocamento } = UI.hist;
+  let dias, titulo;
+  if (modo === "semana") {
+    const dom = somarDias(inicioDaSemana(hoje), 7 * deslocamento);
+    dias = diasDaSemana(dom); titulo = formatarIntervalo(dias[0], dias[6]);
+  } else {
+    const ref = new Date(hoje.getFullYear(), hoje.getMonth() + deslocamento, 1);
+    const n = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate();
+    dias = Array.from({ length: n }, (_, i) => new Date(ref.getFullYear(), ref.getMonth(), i + 1));
+    titulo = `${MESES[ref.getMonth()]} de ${ref.getFullYear()}`;
+  }
+  const totais = dias.map((d) => porDia.get(chaveDoDia(d)) || 0);
+  const max = Math.max(5, ...totais);
+  const barras = dias.map((d, i) => {
+    const k = chaveDoDia(d), fut = d > hoje && k !== kHoje, t = totais[i];
+    const rot = modo === "semana" ? DIAS_ABREV[d.getDay()] : ([1, 5, 10, 15, 20, 25, 30].includes(d.getDate()) ? d.getDate() : "");
+    return `<div class="b ${k === kHoje ? "hoje" : ""}"><span class="num ${k === kHoje ? "acc" : "mute"}">${fut || (modo === "mes" && !t) ? "&nbsp;" : t}</span>
+      <div class="trilho" aria-hidden="true"><i style="height:${fut ? 0 : (t / max) * 100}%"></i></div><span class="${k === kHoje ? "" : "mute"}">${rot}</span></div>`;
+  }).join("");
+  const total = totais.reduce((a, b) => a + b, 0);
+  const mi = indiceMelhor(totais);
+  const melhor = mi === null ? "–" : modo === "semana" ? DIAS_ABREV[dias[mi].getDay()] : `${dias[mi].getDate()}/${pad(dias[mi].getMonth() + 1)}`;
+  const ini = chaveDoDia(dias[0]), fim = chaveDoDia(dias[dias.length - 1]);
+  const doPeriodo = S.acoes.filter((a) => { const k = chaveDoDia(new Date(a.criadoEm)); return k >= ini && k <= fim; }).sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+  const visiveis = doPeriodo.slice(0, UI.hist.limite);
+  const grupos = [];
+  for (const a of visiveis) {
+    const d = new Date(a.criadoEm), k = chaveDoDia(d);
+    let g = grupos[grupos.length - 1];
+    if (!g || g.k !== k) { g = { k, titulo: rotuloDoDia(d, hoje), itens: [], total: doPeriodo.filter((x) => chaveDoDia(new Date(x.criadoEm)) === k).length }; grupos.push(g); }
+    g.itens.push(a);
+  }
+  const agora = Date.now();
+  const lista = grupos.map((g) => `<section class="grupo"><div class="linha entre" style="min-height:44px"><h2 class="t-sec">${g.titulo}</h2><span class="t-sup mute num">${plural(g.total, "ação", "ações")}</span></div>
+    ${g.itens.map((a) => `<div class="item-hist"><span class="t-sup mute num">${formatarHora(new Date(a.criadoEm))}</span><span class="ic-circ">${ic(a.categoria)}</span><span class="t-body">${esc(nomeAcao(a))}</span>
+      ${agora - new Date(a.criadoEm).getTime() < 5 * 60000 ? `<button class="link" data-a="desfazer" data-id="${a.id}">Desfazer</button>` : "<span></span>"}</div>`).join("")}</section>`).join("");
+  return `<h1 class="t-h1">Histórico</h1>
+    <div class="seg" role="group" aria-label="Período"><button data-a="hist-modo" data-v="semana" aria-pressed="${modo === "semana"}">Semana</button><button data-a="hist-modo" data-v="mes" aria-pressed="${modo === "mes"}">Mês</button></div>
+    <section class="card coluna"><div class="nav-mes"><button data-a="hist-nav" data-d="-1" aria-label="Período anterior">${ic("anterior")}</button><span class="t-body">${titulo}</span>
+      <button data-a="hist-nav" data-d="1" aria-label="Próximo período" ${deslocamento >= 0 ? "disabled" : ""}>${ic("proximo")}</button></div>
+      <div class="barras ${modo === "mes" ? "mes" : ""}" style="grid-template-columns:repeat(${dias.length},1fr)">${barras}</div></section>
+    <section class="card tres"><div><div class="grande num">${total}</div><div class="t-sup mute">ações ${modo === "semana" ? "na semana" : "no mês"}</div></div>
+      <div><div class="grande num">${sequenciaAtual(porDia, hoje)}</div><div class="t-sup mute">dias seguidos</div></div>
+      <div><div class="grande">${melhor}</div><div class="t-sup mute">melhor dia</div></div></section>
+    ${lista || `<p class="t-sup mute">Nenhuma ação neste período.</p>`}
+    ${doPeriodo.length > visiveis.length ? `<button class="btn-sec" data-a="hist-mais">Mostrar mais ${Math.min(30, doPeriodo.length - visiveis.length)}</button>` : ""}`;
+}
+
+function telaPerfil() {
+  const hoje = hojeAgora();
+  const porDia = contarPorDia(S.acoes);
+  const nome = S.prefs.nome.trim() || "Convidado";
+  const ini = nome.split(/\s+/).filter(Boolean); const iniciais = ((ini[0] || "?")[0] + (ini.length > 1 ? ini[ini.length - 1][0] : "")).toUpperCase();
+  const domAtual = inicioDaSemana(hoje);
+  const cols = Array.from({ length: 12 }, (_, c) => {
+    const dom = somarDias(domAtual, -7 * (11 - c));
+    return `<div class="col">${diasDaSemana(dom).map((d) => { const t = porDia.get(chaveDoDia(d)) || 0; const fut = d > hoje; return `<i class="${fut ? "futuro" : t ? "n" + nivel(t) : ""}" title="${formatarDiaMes(d)}: ${plural(t, "ação", "ações")}"></i>`; }).join("")}</div>`;
+  }).join("");
+  let fuso = "Horário do aparelho"; try { fuso = (Intl.DateTimeFormat().resolvedOptions().timeZone || fuso).replace(/_/g, " ").replace("America/Sao Paulo", "América/São Paulo"); } catch (e) {}
+  const n = S.plano.atividades.length;
+  const sw = (v, bg, rot) => `<button data-a="destaque" data-v="${v}" aria-pressed="${S.prefs.destaque === v}" aria-label="${rot}" style="background:${bg}">${S.prefs.destaque === v ? ic("check", 20, 2.6) : ""}</button>`;
+  const esc2 = esquemaAtual() === "dark";
+  const confirma = UI.confirmar === "apagar";
+  return `<h1 class="t-h1">Perfil</h1>
+    <section class="linha"><span class="avatar">${esc(iniciais)}</span><div style="flex:1;min-width:0"><div class="t-card" style="font-weight:600">${esc(nome)}</div><div class="t-sup mute" style="overflow-wrap:anywhere">${esc(S.prefs.email || "Dados salvos neste navegador")}</div></div>
+      <button class="btn-sec" data-a="abrir-perfil">Editar</button></section>
+    <section class="duas"><div class="card"><div class="grande num">${S.acoes.length}</div><div class="t-sup mute">ações registradas</div></div>
+      <div class="card"><div class="grande num">${plural(sequenciaAtual(porDia, hoje), "dia", "dias")}</div><div class="t-sup mute">sequência atual</div></div></section>
+    <section class="card coluna"><div class="linha entre"><h2 class="t-sec">Mapa de calor</h2><span class="t-sup mute">últimas 12 semanas</span></div>
+      <div class="mapa">${cols}</div>
+      <div class="legenda t-sup mute">menos <i></i><i class="n1"></i><i class="n2"></i><i class="n3"></i><i class="n4"></i> mais</div></section>
+    <section class="coluna"><h2 class="t-sec">Seu plano</h2>
+      <div class="card" style="padding:4px 20px">
+        <button class="linha-config linha-toque" data-a="abrir-meuplano"><span><span class="t-body" style="display:block">Meu plano</span><span class="t-sup mute">${n ? plural(n, "atividade", "atividades") : "Nenhuma atividade ainda"}</span></span>${ic("proximo")}</button>
+        <button class="linha-config linha-toque" data-a="abrir-monte"><span class="t-body">Montar o dia de novo</span>${ic("proximo")}</button>
+        <div class="linha-config"><span><span class="t-body" style="display:block">Meta sem plano</span><span class="t-sup mute">ações por dia quando o plano está vazio</span></span>
+          <span class="stepper"><button data-a="meta-sem" data-d="-1" aria-label="Diminuir" ${S.prefs.metaSemPlano <= 1 ? "disabled" : ""}>${ic("menos", 18)}</button><span class="num">${S.prefs.metaSemPlano}</span><button data-a="meta-sem" data-d="1" aria-label="Aumentar" ${S.prefs.metaSemPlano >= 20 ? "disabled" : ""}>${ic("mais", 18)}</button></span></div>
+      </div></section>
+    <section class="coluna"><h2 class="t-sec">Aparência</h2>
+      <div class="seg" role="group" aria-label="Tema"><button data-a="tema" data-v="claro" aria-pressed="${S.prefs.tema === "claro"}">Claro</button><button data-a="tema" data-v="escuro" aria-pressed="${S.prefs.tema === "escuro"}">Escuro</button><button data-a="tema" data-v="auto" aria-pressed="${S.prefs.tema === "auto"}">Automático</button></div>
+      <div class="linha-config"><span class="t-body">Cor de destaque</span><span class="amostras">${sw("gradiente", `linear-gradient(180deg, ${esc2 ? "#7A4DFF" : "#4607CD"}, #FF4B00)`, "Gradiente")}${sw("laranja", "#FF4B00", "Laranja")}${sw("indigo", esc2 ? "#7A4DFF" : "#4607CD", "Índigo")}</span></div>
+      <div class="linha-config"><span class="t-body">Fuso horário</span><span class="t-sup mute">${esc(fuso)}</span></div></section>
+    <section class="coluna"><h2 class="t-sec">Dados</h2>
+      <p class="t-sup mute" style="margin:0">Tudo fica salvo neste navegador. Login e sincronização entram na Etapa 7.</p>
+      <div class="linha" style="flex-wrap:wrap"><button class="btn-sec" data-a="carregar-exemplos">Carregar exemplos</button>
+        <button class="btn-sec btn-perigo" data-a="apagar">${confirma ? "Toque de novo para apagar tudo" : "Apagar todos os dados"}</button></div></section>`;
+}
+
+/* ================= Formulário de atividade ================= */
+function novoDraft(categoria, base) {
+  const s = SUGESTAO_PLANO[categoria || "outro"];
+  return JSON.parse(JSON.stringify(Object.assign({ categoria, rotulo: "", meta: s.meta, minimo: s.minimo, dias: [0, 1, 2, 3, 4, 5, 6], quando: s.quando }, base || {})));
+}
+function formHTML(k) {
+  const d = UI.drafts[k];
+  const q = d.quando;
+  const cada = [30, 60, 90, 120, 180, 240].map((m) => `<option value="${m}" ${q.cadaMinutos == m ? "selected" : ""}>${m % 60 === 0 ? m / 60 + " h" : m + " min"}</option>`).join("");
+  let qh = "";
+  if (q.tipo === "horarios") {
+    qh = `<div class="horas">${q.horas.map((h, i) => `<span class="hora"><input type="time" id="h-${k}-${i}" value="${h}" data-fk="${k}" data-campo="hora" data-i="${i}" aria-label="Horário ${i + 1}">${q.horas.length > 1 ? `<button data-a="f-hora-del" data-k="${k}" data-i="${i}" aria-label="Remover horário">${ic("x", 16)}</button>` : ""}</span>`).join("")}
+      ${q.horas.length < 8 ? `<button class="chip" data-a="f-hora-add" data-k="${k}">${ic("mais", 16)} Horário</button>` : ""}</div>`;
+  } else if (q.tipo === "intervalo") {
+    qh = `<div class="horas"><span class="t-sup">das</span><input class="input pequeno" type="time" id="ini-${k}" value="${q.inicio}" data-fk="${k}" data-campo="inicio" aria-label="Início">
+      <span class="t-sup">até</span><input class="input pequeno" type="time" id="fim-${k}" value="${q.fim}" data-fk="${k}" data-campo="fim" aria-label="Fim">
+      <span class="t-sup">a cada</span><select class="input pequeno" id="cada-${k}" data-fk="${k}" data-campo="cada" aria-label="Intervalo">${cada}</select></div>`;
+  } else qh = `<p class="nota" style="margin:0">Fica na lista do dia, sem lembrete.</p>`;
+  const st = (campo, v, min, max) => `<span class="stepper"><button data-a="f-num" data-k="${k}" data-campo="${campo}" data-d="-1" aria-label="Diminuir" ${v <= min ? "disabled" : ""}>${ic("menos", 18)}</button><span class="num">${v}</span><button data-a="f-num" data-k="${k}" data-campo="${campo}" data-d="1" aria-label="Aumentar" ${v >= max ? "disabled" : ""}>${ic("mais", 18)}</button></span>`;
+  return `<div class="coluna" style="gap:16px">
+    ${d.categoria === "outro" ? `<div class="campo"><label for="rot-${k}">Nome</label><input class="input" id="rot-${k}" maxlength="${ROTULO_MAX}" value="${esc(d.rotulo)}" data-fk="${k}" data-campo="rotulo" placeholder="Ex.: meditação de 10 minutos"></div>` : ""}
+    <div class="linha entre"><span><span class="rot" style="display:block">Quantidade por dia</span><span class="t-cap mute">quando a atividade fica completa</span></span>${st("meta", d.meta, 1, 20)}</div>
+    <div class="linha entre"><span><span class="rot" style="display:block">Versão mínima</span><span class="t-cap mute">o que conta num dia difícil</span></span>${st("minimo", d.minimo, 1, d.meta)}</div>
+    <div class="campo"><span class="rot">Dias da semana</span><div class="dias" role="group" aria-label="Dias da semana">${DIAS_LETRA.map((l, i) => `<button data-a="f-dia" data-k="${k}" data-i="${i}" aria-pressed="${d.dias.includes(i)}" aria-label="${DIAS_SEMANA[i]}">${l}</button>`).join("")}</div></div>
+    <div class="campo"><span class="rot">Quando lembrar</span>
+      <div class="seg" role="group" aria-label="Quando lembrar">${[["horarios", "Horários"], ["intervalo", "Intervalo"], ["livre", "Sem horário"]].map(([t, r]) => `<button data-a="f-quando" data-k="${k}" data-v="${t}" aria-pressed="${q.tipo === t}">${r}</button>`).join("")}</div>
+      ${qh}<p class="nota" style="margin:0">Os avisos chegam na Parte 2. O horário já fica salvo no plano.</p></div></div>`;
+}
+function draftQuando(d, tipo) {
+  if (tipo === "horarios") d.quando = { tipo, horas: d.quando.horas || ["09:00"] };
+  else if (tipo === "intervalo") d.quando = { tipo, inicio: d.quando.inicio || "09:00", fim: d.quando.fim || "21:00", cadaMinutos: d.quando.cadaMinutos || 120 };
+  else d.quando = { tipo: "livre" };
+}
+function draftParaValidar(d) { return Object.assign({}, d, { rotulo: d.rotulo || "", quando: d.quando }); }
+
+/* ================= Camadas ================= */
+function cabPagina(titulo, voltar, extra) {
+  return `<div class="linha"><button class="voltar" data-a="${voltar}" aria-label="Voltar">${ic("anterior")}</button>${extra || `<h1 class="t-sheet" style="flex:1">${titulo}</h1>`}</div>`;
+}
+function camadaHTML() {
+  const c = UI.camada;
+  if (!c) return "";
+  if (c === "outro") {
+    return `<div class="veu" data-a="fechar"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tt-outro"><span class="alca"></span>
+      <div><h2 class="t-sheet" id="tt-outro">Outra ação</h2><p class="t-sup mute" style="margin:4px 0 0">Dê um nome curto. Ele aparece assim no seu histórico.</p></div>
+      <div class="campo"><label for="outro-txt">O que você fez?</label><input class="input" id="outro-txt" maxlength="${ROTULO_MAX}" placeholder="Ex.: meditação de 10 minutos" autocomplete="off"></div>
+      <div class="chips">${SUGESTOES_OUTRO.map((s) => `<button class="chip" data-a="outro-sug" data-s="${s}">${s}</button>`).join("")}</div>
+      <button class="btn-acao" id="outro-ok" data-a="outro-ok" disabled>Registrar ação</button>
+      <button class="link" data-a="fechar" style="color:var(--mute);align-self:center">Cancelar</button></div>`;
+  }
+  if (c === "perfil") {
+    return `<div class="veu" data-a="fechar"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tt-perfil"><span class="alca"></span>
+      <h2 class="t-sheet" id="tt-perfil">Editar perfil</h2>
+      <div class="campo"><label for="p-nome">Nome</label><input class="input" id="p-nome" value="${esc(S.prefs.nome)}" maxlength="60" placeholder="Como quer ser chamado"></div>
+      <div class="campo"><label for="p-email">E-mail</label><input class="input" id="p-email" type="email" value="${esc(S.prefs.email)}" placeholder="voce@exemplo.com"></div>
+      ${UI.erro ? `<p class="erro" style="margin:0">${esc(UI.erro)}</p>` : ""}
+      <button class="btn-acao" data-a="perfil-ok">Salvar</button><button class="link" data-a="fechar" style="color:var(--mute);align-self:center">Cancelar</button></div>`;
+  }
+  if (c === "monte") return monteHTML();
+  if (c === "seudia") return seuDiaHTML();
+  if (c === "meuplano") return meuPlanoHTML();
+  if (c === "editar") return editarHTML();
+  return "";
+}
+
+function monteHTML() {
+  const m = UI.monte;
+  const passos = `<div class="passos" aria-label="Passo ${m.passo + 1} de 4">${[0, 1, 2, 3].map((i) => `<i class="${i <= m.passo ? "on" : ""}"></i>`).join("")}</div>`;
+  const topo = `<div class="linha">${m.passo > 0 ? `<button class="voltar" data-a="m-voltar" aria-label="Voltar">${ic("anterior")}</button>` : ""}${passos}<button class="link" data-a="m-pular" style="color:var(--mute)">Pular</button></div>`;
+  let corpo = "", acoes = "";
+  if (m.passo === 0) {
+    corpo = `<div class="coluna" style="gap:16px;padding-top:24px">
+      <h1 class="t-h1">Vamos montar seu dia</h1>
+      <p class="t-body mute" style="margin:0;font-weight:400">Escolha o que quer fazer, quantas vezes e o mínimo para dias difíceis. Depois é só marcar com 1 toque na tela Hoje.</p>
+      <ol class="coluna t-sup" style="margin:0;padding-left:20px;gap:6px"><li>Planejar o que quer fazer</li><li>Ser lembrado na hora certa</li><li>Registrar com 1 toque</li><li>Acompanhar progresso e sequência</li></ol></div>`;
+    acoes = `<button class="btn-acao" data-a="m-prox">Começar</button>`;
+  } else if (m.passo === 1) {
+    const tiles = FIXAS.map((c) => { const on = m.escolhidas.some((e) => e.categoria === c); return `<button class="cat" data-a="m-cat" data-c="${c}" aria-pressed="${on}">${on ? `<span class="marca">${ic("check", 16, 2.6)}</span>` : ""}<span class="ic-circ">${ic(c)}</span><span class="t-body">${CATS[c]}</span></button>`; }).join("");
+    const outros = m.escolhidas.filter((e) => e.categoria === "outro").map((e) => `<span class="chip">${esc(e.rotulo)}<button data-a="m-outro-del" data-k="${e.k}" aria-label="Remover ${esc(e.rotulo)}" style="display:grid;place-items:center;height:32px;width:28px">${ic("x", 16)}</button></span>`).join("");
+    corpo = `<h1 class="t-h1">O que você quer fazer?</h1><p class="t-sup mute" style="margin:0">Escolha quantas quiser. Não há limite.</p>
+      <div class="escolha">${tiles}</div>
+      <div class="card coluna"><span class="rot">Outro</span>
+        <div class="linha"><input class="input" id="m-outro" maxlength="${ROTULO_MAX}" placeholder="Ex.: leitura" style="flex:1;min-width:0"><button class="btn-sec" data-a="m-outro-add">Adicionar</button></div>
+        <div class="chips">${SUGESTOES_OUTRO.map((s) => `<button class="chip" data-a="m-outro-sug" data-s="${s}">${ic("mais", 16)} ${s}</button>`).join("")}</div>
+        ${outros ? `<div class="chips">${outros}</div>` : ""}</div>
+      ${UI.erro ? `<p class="erro" style="margin:0">${esc(UI.erro)}</p>` : ""}`;
+    acoes = `<button class="btn-acao" data-a="m-prox" ${m.escolhidas.length ? "" : "disabled"}>${m.escolhidas.length ? `Continuar com ${plural(m.escolhidas.length, "atividade", "atividades")}` : "Escolha pelo menos 1 atividade"}</button>`;
+  } else if (m.passo === 2) {
+    corpo = `<h1 class="t-h1">Como fica cada uma</h1><p class="t-sup mute" style="margin:0">Os valores já vêm sugeridos. Ajuste o que quiser.</p>
+      ${m.escolhidas.map((e) => `<section class="card coluna" style="gap:16px"><div class="linha"><span class="ic-circ">${ic(e.categoria)}</span><h2 class="t-card">${esc(e.categoria === "outro" ? e.rotulo : CATS[e.categoria])}</h2></div>${formHTML(e.k)}</section>`).join("")}
+      ${UI.erro ? `<p class="erro" style="margin:0">${esc(UI.erro)}</p>` : ""}`;
+    acoes = `<button class="btn-acao" data-a="m-prox">Revisar plano</button>`;
+  } else {
+    const ats = m.escolhidas.map((e) => UI.drafts[e.k]);
+    corpo = `<h1 class="t-h1">Seu dia está pronto</h1>
+      <div class="card" style="padding:4px 20px">${ats.map((a) => `<div class="linha-config"><span class="linha"><span class="ic-circ">${ic(a.categoria)}</span><span><span class="t-body" style="display:block">${esc(nomeAtividade(a))}</span><span class="t-cap mute">${a.meta} por dia · mínimo ${a.minimo} · ${descreverDias(a.dias)}</span><span class="t-cap mute" style="display:block">${descreverQuando(a.quando)}</span></span></span></div>`).join("")}</div>
+      <p class="t-sup mute" style="margin:0">Você muda isso quando quiser em Perfil, Meu plano. Para mudar só hoje, use Ajustar na tela Hoje.</p>`;
+    acoes = `<button class="btn-acao" data-a="m-concluir">${ic("check")} Concluir</button>`;
+  }
+  return `<div class="pagina" role="dialog" aria-modal="true" aria-label="Monte seu dia"><div class="miolo">${topo}${corpo}</div><div class="acoes-fixas">${acoes}</div></div>`;
+}
+
+function seuDiaHTML() {
+  const hoje = hojeAgora(), k = chaveDoDia(hoje), aj = ajusteDe(k);
+  const base = S.plano.atividades.filter((a) => a.dias.includes(hoje.getDay()));
+  const ex = UI.extra;
+  const doDia = planoDoDia(hoje);
+  const ocupadas = new Set(doDia.filter((a) => a.categoria !== "outro").map((a) => a.categoria));
+  const linhas = base.map((a) => { const on = !aj.puladas.includes(a.id); return `<div class="linha-config"><span class="linha"><span class="ic-circ">${ic(a.categoria)}</span><span><span class="t-body" style="display:block">${esc(nomeAtividade(a))}</span><span class="t-cap mute">${on ? `${a.meta} por dia` : "pulada hoje"}</span></span></span>
+      <button class="interruptor" role="switch" aria-checked="${on}" aria-label="${esc(nomeAtividade(a))} vale hoje" data-a="sd-toggle" data-id="${a.id}"></button></div>`; }).join("");
+  const extras = aj.extras.map((a) => `<div class="linha-config"><span class="linha"><span class="ic-circ">${ic(a.categoria)}</span><span><span class="t-body" style="display:block">${esc(nomeAtividade(a))}</span><span class="t-cap mute">${a.meta} hoje</span></span></span><button class="link" data-a="sd-extra-del" data-id="${a.id}" style="color:var(--erro)">Remover</button></div>`).join("");
+  const cats = [...FIXAS, "outro"].map((c) => `<button class="chip" data-a="sd-cat" data-c="${c}" aria-pressed="${ex.categoria === c}" ${ocupadas.has(c) ? "disabled title='Já está no plano de hoje'" : ""}>${ic(c, 18)} ${CATS[c]}</button>`).join("");
+  return `<div class="pagina" role="dialog" aria-modal="true" aria-label="Seu dia"><div class="miolo">${cabPagina("Seu dia", "fechar")}
+    <p class="t-sup mute" style="margin:0">Mudanças só para ${formatarCabecalho(hoje).toLowerCase()}. O plano base continua igual.</p>
+    <section class="coluna"><h2 class="t-sec">Do plano</h2>${linhas ? `<div class="card" style="padding:4px 20px">${linhas}</div>` : `<p class="t-sup mute" style="margin:0">Nenhuma atividade do plano cai hoje.</p>`}</section>
+    ${extras ? `<section class="coluna"><h2 class="t-sec">Só hoje</h2><div class="card" style="padding:4px 20px">${extras}</div></section>` : ""}
+    <section class="card coluna" style="gap:16px"><h2 class="t-sec">Acrescentar só hoje</h2>
+      <div class="chips">${cats}</div>
+      ${ocupadas.size ? `<p class="nota" style="margin:0">Categorias que já estão no plano de hoje ficam bloqueadas. Ajuste a existente.</p>` : ""}
+      ${ex.categoria === "outro" ? `<div class="campo"><label for="sd-rot">Nome</label><input class="input" id="sd-rot" maxlength="${ROTULO_MAX}" value="${esc(ex.rotulo)}" placeholder="Ex.: arrumar a mesa"></div>` : ""}
+      <div class="linha entre"><span class="rot">Quantidade</span><span class="stepper"><button data-a="sd-meta" data-d="-1" aria-label="Diminuir" ${ex.meta <= 1 ? "disabled" : ""}>${ic("menos", 18)}</button><span class="num">${ex.meta}</span><button data-a="sd-meta" data-d="1" aria-label="Aumentar" ${ex.meta >= 20 ? "disabled" : ""}>${ic("mais", 18)}</button></span></div>
+      ${UI.erro ? `<p class="erro" style="margin:0">${esc(UI.erro)}</p>` : ""}
+      <button class="btn-acao" data-a="sd-add" ${ex.categoria ? "" : "disabled"}>${ic("mais")} Acrescentar</button></section>
+    </div><div class="acoes-fixas"><button class="btn-acao" data-a="fechar">Pronto</button></div></div>`;
+}
+
+function meuPlanoHTML() {
+  const ats = S.plano.atividades;
+  const linhas = ats.map((a) => `<button class="linha-config linha-toque" data-a="mp-abrir" data-id="${a.id}"><span class="linha"><span class="ic-circ">${ic(a.categoria)}</span><span><span class="t-body" style="display:block">${esc(nomeAtividade(a))}</span><span class="t-cap mute">${a.meta} por dia · mínimo ${a.minimo} · ${descreverDias(a.dias)}</span><span class="t-cap mute" style="display:block">${descreverQuando(a.quando)}</span></span></span>${ic("proximo")}</button>`).join("");
+  return `<div class="pagina" role="dialog" aria-modal="true" aria-label="Meu plano"><div class="miolo">${cabPagina("Meu plano", "fechar")}
+    ${linhas ? `<div class="card" style="padding:4px 20px">${linhas}</div>` : `<div class="card coluna"><p class="t-sup mute" style="margin:0">Seu plano está vazio. Crie a primeira atividade ou use o passo a passo.</p><button class="btn-sec" data-a="abrir-monte">Montar meu dia</button></div>`}
+    </div><div class="acoes-fixas"><button class="btn-acao" data-a="mp-novo">${ic("mais")} Nova atividade</button></div></div>`;
+}
+
+function editarHTML() {
+  const d = UI.drafts.ed;
+  const novo = !d.id;
+  const usadas = new Set(S.plano.atividades.filter((a) => a.categoria !== "outro" && a.id !== d.id).map((a) => a.categoria));
+  const seletor = novo ? `<section class="coluna"><span class="rot">Categoria</span><div class="chips">${[...FIXAS, "outro"].map((c) => `<button class="chip" data-a="ed-cat" data-c="${c}" aria-pressed="${d.categoria === c}" ${usadas.has(c) ? "disabled" : ""}>${ic(c, 18)} ${CATS[c]}</button>`).join("")}</div>
+    ${usadas.size ? `<p class="nota" style="margin:0">${juntar([...usadas].map((c) => CATS[c]))} já ${usadas.size > 1 ? "estão" : "está"} no seu plano.</p>` : ""}</section>` : "";
+  const titulo = novo ? "Nova atividade" : nomeAtividade(S.plano.atividades.find((a) => a.id === d.id) || d);
+  return `<div class="pagina" role="dialog" aria-modal="true" aria-label="${esc(titulo)}"><div class="miolo">${cabPagina(esc(titulo), "abrir-meuplano")}
+    ${seletor}
+    ${d.categoria ? `<section class="card">${formHTML("ed")}</section>` : ""}
+    ${UI.erro ? `<p class="erro" style="margin:0">${esc(UI.erro)}</p>` : ""}
+    ${novo ? "" : `<button class="btn-sec btn-perigo" data-a="ed-remover">${UI.confirmar === "remover" ? "Toque de novo para remover" : "Remover do plano"}</button>`}
+    </div><div class="acoes-fixas"><button class="btn-acao" data-a="ed-salvar" ${d.categoria ? "" : "disabled"}>Salvar</button></div></div>`;
+}
+
+/* ================= Render ================= */
+function abasHTML() {
+  const abas = [["hoje", "Hoje", "hoje"], ["calendario", "Calendário", "calendario"], ["historico", "Histórico", "historico"], ["perfil", "Perfil", "perfil"]];
+  return `<nav class="abas" aria-label="Navegação">${abas.map(([id, rot, i]) => `<button data-a="aba" data-v="${id}" ${UI.aba === id ? 'aria-current="page"' : ""}>${ic(i)}<span>${rot}</span></button>`).join("")}</nav>`;
+}
+function render() {
+  const app = document.getElementById("app");
+  const telas = { hoje: telaHome, calendario: telaCalendario, historico: telaHistorico, perfil: telaPerfil };
+  app.className = UI.aba === "hoje" ? "com-rodape" : "";
+  app.innerHTML = `<div class="tela ${UI.animar ? "entra" : ""}">${telas[UI.aba]()}</div>`;
+  document.getElementById("fixos").innerHTML = (UI.aba === "hoje" ? rodapeHome() : UI.toast ? `<div class="rodape">${toastHTML()}</div>` : "") + abasHTML();
+  const camada = document.getElementById("camada");
+  const pag = camada.querySelector(".pagina");
+  const rolagem = pag ? pag.scrollTop : 0;
+  const tipoAntes = camada.dataset.tipo;
+  camada.innerHTML = camadaHTML();
+  camada.dataset.tipo = UI.camada || "";
+  const nova = camada.querySelector(".pagina");
+  if (nova && tipoAntes === UI.camada) { nova.style.animation = "none"; nova.scrollTop = rolagem; }
+  const sheet = camada.querySelector(".sheet");
+  if (sheet && tipoAntes === UI.camada) { sheet.style.animation = "none"; camada.querySelector(".veu").style.animation = "none"; }
+  document.body.style.overflow = UI.camada ? "hidden" : "";
+  UI.animar = false;
+}
+function abrir(c) { UI.camada = c; UI.erro = ""; UI.confirmar = null; render(); }
+function fechar() { UI.camada = null; UI.erro = ""; UI.confirmar = null; render(); }
+
+/* ================= Eventos ================= */
+document.addEventListener("click", (ev) => {
+  const el = ev.target.closest("[data-a]");
+  if (!el || el.disabled) return;
+  const a = el.dataset.a, ds = el.dataset;
+  if (a !== "apagar" && a !== "ed-remover") UI.confirmar = null;
+  const hoje = hojeAgora();
+  switch (a) {
+    case "aba": UI.aba = ds.v; UI.animar = true; UI.selecionada = null; window.scrollTo(0, 0); break;
+    case "tema": S.prefs.tema = ds.v; salvar(); aplicarTema(); break;
+    case "destaque": S.prefs.destaque = ds.v; salvar(); aplicarTema(); break;
+    case "sel-cat": UI.selecionada = ds.c; break;
+    case "registrar": if (UI.selecionada) { registrar(UI.selecionada); UI.selecionada = null; } break;
+    case "reg-plano": {
+      const at = planoDoDia(hoje).find((x) => x.id === ds.id);
+      if (at) registrar(at.categoria, at.categoria === "outro" ? at.rotulo : undefined);
+      break;
+    }
+    case "desfazer": remover(ds.id); if (UI.toast && UI.toast.id === ds.id) { clearTimeout(UI.toastTimer); UI.toast = null; } break;
+    case "limpar-exemplos": S.acoes = S.acoes.filter((x) => !x.id.startsWith("ex-")); salvar(); break;
+    case "carregar-exemplos": S.acoes = S.acoes.filter((x) => !x.id.startsWith("ex-")).concat(exemplos()); salvar(); break;
+    case "apagar":
+      if (UI.confirmar !== "apagar") { UI.confirmar = "apagar"; break; }
+      S = estadoVazio(); S.plano.apresentado = true; salvar(); aplicarTema(); UI.confirmar = null; UI.toast = null; break;
+    case "meta-sem": S.prefs.metaSemPlano = Math.min(20, Math.max(1, S.prefs.metaSemPlano + Number(ds.d))); salvar(); break;
+    case "abrir-outro": UI.selecionada = null; abrir("outro"); setTimeout(() => { const i = document.getElementById("outro-txt"); if (i) i.focus(); }, 50); return;
+    case "outro-sug": { const i = document.getElementById("outro-txt"); i.value = ds.s; i.dispatchEvent(new Event("input", { bubbles: true })); i.focus(); return; }
+    case "outro-ok": { const r = normalizarRotulo(document.getElementById("outro-txt").value); if (r) { UI.camada = null; registrar("outro", r); } break; }
+    case "abrir-perfil": abrir("perfil"); return;
+    case "perfil-ok": {
+      const nome = document.getElementById("p-nome").value.trim(), email = document.getElementById("p-email").value.trim();
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { UI.erro = "Confira o e-mail. Ele precisa ter o formato nome@dominio.com."; break; }
+      S.prefs.nome = nome; S.prefs.email = email; salvar(); UI.camada = null; UI.erro = ""; break;
+    }
+    case "fechar": UI.camada = null; UI.erro = ""; break;
+    case "cal-mes": { const d = new Date(UI.cal.ano, UI.cal.mes + Number(ds.d), 1); UI.cal.ano = d.getFullYear(); UI.cal.mes = d.getMonth(); break; }
+    case "cal-dia": { UI.cal.sel = ds.k; const [y, m] = ds.k.split("-").map(Number); UI.cal.ano = y; UI.cal.mes = m - 1; break; }
+    case "hist-modo": UI.hist.modo = ds.v; UI.hist.deslocamento = 0; UI.hist.limite = 30; break;
+    case "hist-nav": UI.hist.deslocamento = Math.min(0, UI.hist.deslocamento + Number(ds.d)); UI.hist.limite = 30; break;
+    case "hist-mais": UI.hist.limite += 30; break;
+
+    /* Monte seu dia */
+    case "abrir-monte": {
+      UI.drafts = {};
+      const escolhidas = S.plano.atividades.map((at, i) => { const k = "m" + i; UI.drafts[k] = JSON.parse(JSON.stringify(at)); return { k, categoria: at.categoria, rotulo: at.rotulo }; });
+      UI.monte = { passo: 0, escolhidas, n: escolhidas.length };
+      abrir("monte"); return;
+    }
+    case "m-pular": S.plano.apresentado = true; salvar(); UI.camada = null; break;
+    case "m-voltar": UI.monte.passo--; UI.erro = ""; break;
+    case "m-cat": {
+      const m = UI.monte, i = m.escolhidas.findIndex((e) => e.categoria === ds.c);
+      if (i >= 0) m.escolhidas.splice(i, 1);
+      else { const k = "m" + m.n++; UI.drafts[k] = novoDraft(ds.c); m.escolhidas.push({ k, categoria: ds.c }); }
+      m.escolhidas.sort((x, y) => [...FIXAS, "outro"].indexOf(x.categoria) - [...FIXAS, "outro"].indexOf(y.categoria));
+      UI.erro = ""; break;
+    }
+    case "m-outro-add": case "m-outro-sug": {
+      const r = normalizarRotulo(a === "m-outro-sug" ? ds.s : document.getElementById("m-outro").value);
+      if (!r) { UI.erro = `Dê um nome de 1 a ${ROTULO_MAX} caracteres para o Outro.`; break; }
+      const m = UI.monte;
+      if (m.escolhidas.some((e) => e.categoria === "outro" && e.rotulo.toLowerCase() === r.toLowerCase())) { UI.erro = `"${r}" já foi escolhido.`; break; }
+      const k = "m" + m.n++; UI.drafts[k] = novoDraft("outro", { rotulo: r }); m.escolhidas.push({ k, categoria: "outro", rotulo: r }); UI.erro = ""; break;
+    }
+    case "m-outro-del": UI.monte.escolhidas = UI.monte.escolhidas.filter((e) => e.k !== ds.k); break;
+    case "m-prox": {
+      const m = UI.monte;
+      if (m.passo === 2) {
+        const validadas = [];
+        for (const e of m.escolhidas) {
+          const d = UI.drafts[e.k];
+          const erro = validarAtividade(draftParaValidar(d), validadas, null);
+          if (erro) { UI.erro = `${nomeAtividade(d) || "Outro"}: ${erro}`; render(); return; }
+          validadas.push(Object.assign({ id: e.k }, d, { rotulo: d.rotulo || "" }));
+        }
+        m.escolhidas.forEach((e) => { if (e.categoria === "outro") e.rotulo = UI.drafts[e.k].rotulo.trim(); });
+      }
+      m.passo++; UI.erro = ""; break;
+    }
+    case "m-concluir": {
+      S.plano.atividades = UI.monte.escolhidas.map((e) => limparAtividade(UI.drafts[e.k]));
+      S.plano.apresentado = true; salvar(); UI.camada = null; UI.aba = "hoje"; UI.animar = true; break;
+    }
+
+    /* Formulário */
+    case "f-num": {
+      const d = UI.drafts[ds.k], v = d[ds.campo] + Number(ds.d);
+      if (ds.campo === "meta") { d.meta = Math.min(20, Math.max(1, v)); d.minimo = Math.min(d.minimo, d.meta); }
+      else d.minimo = Math.min(d.meta, Math.max(1, v));
+      break;
+    }
+    case "f-dia": { const d = UI.drafts[ds.k], i = Number(ds.i); d.dias = d.dias.includes(i) ? d.dias.filter((x) => x !== i) : [...d.dias, i].sort(); break; }
+    case "f-quando": draftQuando(UI.drafts[ds.k], ds.v); break;
+    case "f-hora-add": { const q = UI.drafts[ds.k].quando; const ult = q.horas[q.horas.length - 1] || "08:00"; const h = Math.min(23, Number(ult.slice(0, 2)) + 2); q.horas.push(`${pad(h)}:${ult.slice(3)}`); break; }
+    case "f-hora-del": UI.drafts[ds.k].quando.horas.splice(Number(ds.i), 1); break;
+
+    /* Seu dia */
+    case "abrir-seudia": UI.extra = { categoria: null, rotulo: "", meta: 1 }; abrir("seudia"); return;
+    case "sd-toggle": {
+      const k = chaveDoDia(hoje), aj = JSON.parse(JSON.stringify(ajusteDe(k)));
+      aj.puladas = aj.puladas.includes(ds.id) ? aj.puladas.filter((x) => x !== ds.id) : [...aj.puladas, ds.id];
+      S.plano.ajustes[k] = aj; salvar(); break;
+    }
+    case "sd-cat": UI.extra.categoria = ds.c; UI.erro = ""; break;
+    case "sd-meta": UI.extra.meta = Math.min(20, Math.max(1, UI.extra.meta + Number(ds.d))); break;
+    case "sd-add": {
+      const ex = UI.extra, k = chaveDoDia(hoje);
+      const rot = ex.categoria === "outro" ? normalizarRotulo(ex.rotulo) : undefined;
+      if (ex.categoria === "outro" && !rot) { UI.erro = `Dê um nome de 1 a ${ROTULO_MAX} caracteres.`; break; }
+      const doDia = planoDoDia(hoje);
+      if (ex.categoria !== "outro" && doDia.some((x) => x.categoria === ex.categoria)) { UI.erro = `${CATS[ex.categoria]} já está no plano de hoje.`; break; }
+      if (rot && doDia.some((x) => x.categoria === "outro" && x.rotulo.toLowerCase() === rot.toLowerCase())) { UI.erro = `"${rot}" já está no plano de hoje.`; break; }
+      const aj = JSON.parse(JSON.stringify(ajusteDe(k)));
+      aj.extras.push({ id: novoId(), categoria: ex.categoria, rotulo: rot, meta: ex.meta, minimo: 1, dias: [hoje.getDay()], quando: { tipo: "livre" }, criadaEm: new Date().toISOString(), extra: true });
+      S.plano.ajustes[k] = aj; salvar(); UI.extra = { categoria: null, rotulo: "", meta: 1 }; UI.erro = ""; break;
+    }
+    case "sd-extra-del": {
+      const k = chaveDoDia(hoje), aj = JSON.parse(JSON.stringify(ajusteDe(k)));
+      aj.extras = aj.extras.filter((x) => x.id !== ds.id); S.plano.ajustes[k] = aj; salvar(); break;
+    }
+
+    /* Meu plano */
+    case "abrir-meuplano": abrir("meuplano"); return;
+    case "mp-abrir": UI.drafts.ed = JSON.parse(JSON.stringify(S.plano.atividades.find((x) => x.id === ds.id))); abrir("editar"); return;
+    case "mp-novo": UI.drafts.ed = novoDraft(null); UI.drafts.ed.categoria = null; abrir("editar"); return;
+    case "ed-cat": { const rot = UI.drafts.ed.rotulo; UI.drafts.ed = novoDraft(ds.c, { rotulo: rot || "" }); UI.erro = ""; break; }
+    case "ed-salvar": {
+      const d = UI.drafts.ed;
+      const erro = validarAtividade(draftParaValidar(d), S.plano.atividades, d.id);
+      if (erro) { UI.erro = erro; break; }
+      const limpa = limparAtividade(d);
+      const i = S.plano.atividades.findIndex((x) => x.id === limpa.id);
+      if (i >= 0) S.plano.atividades[i] = limpa; else S.plano.atividades.push(limpa);
+      S.plano.apresentado = true; salvar(); UI.camada = "meuplano"; UI.erro = ""; break;
+    }
+    case "ed-remover": {
+      if (UI.confirmar !== "remover") { UI.confirmar = "remover"; break; }
+      const id = UI.drafts.ed.id;
+      S.plano.atividades = S.plano.atividades.filter((x) => x.id !== id);
+      for (const k in S.plano.ajustes) S.plano.ajustes[k].puladas = S.plano.ajustes[k].puladas.filter((x) => x !== id);
+      salvar(); UI.confirmar = null; UI.camada = "meuplano"; break;
+    }
+    default: return;
+  }
+  render();
+});
+
+document.addEventListener("input", (ev) => {
+  const t = ev.target;
+  if (t.id === "outro-txt") { document.getElementById("outro-ok").disabled = !normalizarRotulo(t.value); return; }
+  if (t.id === "sd-rot") { UI.extra.rotulo = t.value; return; }
+  const k = t.dataset.fk;
+  if (!k || !UI.drafts[k]) return;
+  const d = UI.drafts[k];
+  switch (t.dataset.campo) {
+    case "rotulo": d.rotulo = t.value; break;
+    case "hora": d.quando.horas[Number(t.dataset.i)] = t.value; break;
+    case "inicio": d.quando.inicio = t.value; break;
+    case "fim": d.quando.fim = t.value; break;
+    case "cada": d.quando.cadaMinutos = Number(t.value); break;
+  }
+});
+document.addEventListener("change", (ev) => { if (ev.target.dataset && ev.target.dataset.campo === "cada") UI.drafts[ev.target.dataset.fk].quando.cadaMinutos = Number(ev.target.value); });
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && UI.camada) { fechar(); return; }
+  if (ev.key === "Enter" && ev.target.id === "outro-txt") document.getElementById("outro-ok").click();
+  if (ev.key === "Enter" && ev.target.id === "m-outro") document.querySelector('[data-a="m-outro-add"]').click();
+});
+/* Virada do dia com a página aberta: recalcula o plano de hoje. */
+let diaAtual = chaveDoDia(new Date());
+setInterval(() => { const k = chaveDoDia(new Date()); if (k !== diaAtual) { diaAtual = k; render(); } }, 60000);
+
+aplicarTema();
+render();
+if (!S.plano.apresentado) { UI.drafts = {}; UI.monte = { passo: 0, escolhidas: [], n: 0 }; abrir("monte"); }
+</script>
